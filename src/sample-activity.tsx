@@ -26,36 +26,63 @@ export default async function SampleActivityCommand() {
       browserTab.url
     );
 
-    // Create event sample
     const now = Date.now();
-    const event: EventSample = {
-      id: nanoid(),
-      tsStart: now,
-      tsEnd: now,
-      app: frontmostApp.name,
-      bundleId: frontmostApp.bundleId,
-      windowTitle: frontmostApp.windowTitle,
-      url: browserTab.url,
-      tagRule: classification?.tag,
-      confidenceRule: classification?.confidence,
-      tagFinal: classification?.tag, // For now, use rule tag as final tag
-      sessionId: currentSessionId,
-    };
 
-    // Store the event
-    await eventRepository.create(event);
+    // Get all existing events to check for continuation
+    const allEvents = await eventRepository.getAll();
+    const CONTINUATION_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+
+    // Find the most recent event
+    let shouldContinue = false;
+    let existingEvent: EventSample | null = null;
+
+    if (allEvents.length > 0) {
+      const latestEvent = allEvents[0]; // Already sorted by tsStart descending
+
+      // Check if this is a continuation of the same activity
+      const isSameApp = latestEvent.app === frontmostApp.name;
+      const isSameUrl = latestEvent.url === browserTab.url;
+      const isSameSession = latestEvent.sessionId === currentSessionId;
+      const isRecent = now - latestEvent.tsEnd < CONTINUATION_THRESHOLD;
+
+      if (isSameApp && isSameUrl && isSameSession && isRecent) {
+        shouldContinue = true;
+        existingEvent = latestEvent;
+      }
+    }
+
+    if (shouldContinue && existingEvent) {
+      // Update existing event's tsEnd
+      existingEvent.tsEnd = now;
+      await eventRepository.update(existingEvent);
+    } else {
+      // Create new event
+      const event: EventSample = {
+        id: nanoid(),
+        tsStart: now,
+        tsEnd: now,
+        app: frontmostApp.name,
+        bundleId: frontmostApp.bundleId,
+        windowTitle: frontmostApp.windowTitle,
+        url: browserTab.url,
+        tagRule: classification?.tag,
+        confidenceRule: classification?.confidence,
+        tagFinal: classification?.tag, // For now, use rule tag as final tag
+        sessionId: currentSessionId,
+      };
+
+      // Store the event
+      await eventRepository.create(event);
+    }
 
     // Build HUD message
-    let message = `📸 ${frontmostApp.name}`;
+    let message = shouldContinue ? `⏱️ Continued: ${frontmostApp.name}` : `📸 New: ${frontmostApp.name}`;
     if (classification) {
       message += ` → ${classification.tag}`;
     }
-    if (frontmostApp.windowTitle) {
-      message += ` - ${frontmostApp.windowTitle}`;
-    }
-    if (browserTab.url) {
-      const urlShort = browserTab.url.length > 50 ? browserTab.url.substring(0, 50) + "..." : browserTab.url;
-      message += ` (${urlShort})`;
+    if (shouldContinue && existingEvent) {
+      const durationSec = Math.floor((now - existingEvent.tsStart) / 1000);
+      message += ` (${durationSec}s total)`;
     }
 
     await showHUD(message);

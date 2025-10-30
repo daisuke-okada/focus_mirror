@@ -30,6 +30,11 @@ export const eventRepository = {
     return allEvents.filter((event) => event.sessionId === sessionId);
   },
 
+  async update(event: EventSample): Promise<void> {
+    const key = `${EVENT_PREFIX}${event.id}`;
+    await LocalStorage.setItem(key, JSON.stringify(event));
+  },
+
   async delete(id: string): Promise<void> {
     const key = `${EVENT_PREFIX}${id}`;
     await LocalStorage.removeItem(key);

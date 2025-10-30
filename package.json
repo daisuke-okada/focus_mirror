@@ -40,6 +40,12 @@
       "title": "Sample Activity",
       "description": "Manually capture current app and browser activity",
       "mode": "no-view"
+    },
+    {
+      "name": "show-events",
+      "title": "Show Events",
+      "description": "View all captured activity events with tag classification",
+      "mode": "view"
     }
   ],
   "dependencies": {

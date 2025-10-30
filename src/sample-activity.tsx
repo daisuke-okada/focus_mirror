@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { getFrontmostApp, getBrowserActiveTab } from "./utils/applescript";
 import { eventRepository } from "./data/events";
 import { sessionRepository } from "./data/storage";
+import { classifyActivity } from "./utils/classifier";
 import type { EventSample } from "./types";
 
 export default async function SampleActivityCommand() {
@@ -17,6 +18,14 @@ export default async function SampleActivityCommand() {
     const activeSessions = await sessionRepository.getActiveSessions();
     const currentSessionId = activeSessions.length > 0 ? activeSessions[0].id : undefined;
 
+    // Classify the activity using rules
+    const classification = classifyActivity(
+      frontmostApp.name,
+      frontmostApp.bundleId,
+      frontmostApp.windowTitle,
+      browserTab.url
+    );
+
     // Create event sample
     const now = Date.now();
     const event: EventSample = {
@@ -27,6 +36,9 @@ export default async function SampleActivityCommand() {
       bundleId: frontmostApp.bundleId,
       windowTitle: frontmostApp.windowTitle,
       url: browserTab.url,
+      tagRule: classification?.tag,
+      confidenceRule: classification?.confidence,
+      tagFinal: classification?.tag, // For now, use rule tag as final tag
       sessionId: currentSessionId,
     };
 
@@ -35,11 +47,15 @@ export default async function SampleActivityCommand() {
 
     // Build HUD message
     let message = `📸 ${frontmostApp.name}`;
+    if (classification) {
+      message += ` → ${classification.tag}`;
+    }
     if (frontmostApp.windowTitle) {
       message += ` - ${frontmostApp.windowTitle}`;
     }
     if (browserTab.url) {
-      message += ` (${browserTab.url})`;
+      const urlShort = browserTab.url.length > 50 ? browserTab.url.substring(0, 50) + "..." : browserTab.url;
+      message += ` (${urlShort})`;
     }
 
     await showHUD(message);

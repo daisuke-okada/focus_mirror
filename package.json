@@ -1,0 +1,41 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "focus-mirror",
+  "title": "Focus Mirror",
+  "description": "🪞 Focus Mirror — Reflect on how you really spend time\n\nFocus Mirror helps you align how you intend to spend your time with how you actually do.\nDeclare your focus — “Learning for 2 hours” — and let Raycast quietly watch your activity across apps and Chrome tabs.\nWhen your attention drifts, Focus Mirror gently nudges you back on track and helps you reflect with AI-assisted tagging and daily summaries.\n\n✨ Features\n\n🔍 Monitors your foreground apps and Chrome activity locally (no data leaves your Mac)\n\n🧠 AI-based auto-tagging and natural-language correction (“this was research”)\n\n⏳ Smart deviation detection (2-minute drift or 20% off-track)\n\n📅 Calendar-aware focus suggestions (“Next up: 1h development session”)\n\n🪄 Daily review with tag editing and reflection dashboard\n\n🎯 Why it’s different\nUnlike traditional focus tools that block distractions, Focus Mirror helps you understand your time and build intentional habits through awareness, not restriction.",
+  "icon": "extension-icon.png",
+  "author": "daisuke_okada",
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "start-focus",
+      "title": "Start Focus",
+      "description": "",
+      "mode": "no-view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.103.5",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}

@@ -1,10 +1,14 @@
 import { Detail, ActionPanel, Action, Icon } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { sessionRepository } from "./data/storage";
+import { eventRepository } from "./data/events";
+import { detectDeviation, formatTagBreakdown, getDeviationSeverity } from "./utils/deviation-detector";
 import type { Session } from "./types";
+import type { DeviationResult } from "./utils/deviation-detector";
 
 export default function ShowCurrentFocusCommand() {
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
+  const [deviation, setDeviation] = useState<DeviationResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -14,7 +18,17 @@ export default function ShowCurrentFocusCommand() {
   async function loadCurrentSession() {
     try {
       const activeSessions = await sessionRepository.getActiveSessions();
-      setCurrentSession(activeSessions.length > 0 ? activeSessions[0] : null);
+      const session = activeSessions.length > 0 ? activeSessions[0] : null;
+      setCurrentSession(session);
+
+      // Load deviation info if session exists
+      if (session) {
+        const allEvents = await eventRepository.getAll();
+        const deviationResult = detectDeviation(session, allEvents);
+        setDeviation(deviationResult);
+      } else {
+        setDeviation(null);
+      }
     } catch (error) {
       console.error("Failed to load current session:", error);
     } finally {
@@ -90,6 +104,29 @@ export default function ShowCurrentFocusCommand() {
     ((Date.now() - currentSession.startedAt) / (currentSession.durationMinutes * 60000)) * 100
   );
 
+  // Build deviation section
+  let deviationSection = "";
+  if (deviation && deviation.tagBreakdown.size > 0) {
+    const severity = getDeviationSeverity(deviation);
+    const severityEmoji = severity === "critical" ? "🔴" : severity === "warning" ? "🟡" : "🟢";
+
+    deviationSection = `
+### ${severityEmoji} Activity Breakdown
+
+${formatTagBreakdown(deviation.tagBreakdown, currentSession.tagDeclared)}
+`;
+
+    if (deviation.isDeviating) {
+      deviationSection += `\n---\n\n⚠️ **Deviation Detected!**\n`;
+      if (deviation.continuousDeviation) {
+        deviationSection += `- Continuous deviation: ${deviation.continuousDurationSeconds}s\n`;
+      }
+      if (deviation.percentageDeviation) {
+        deviationSection += `- Off-track time: ${deviation.deviationPercent.toFixed(0)}%\n`;
+      }
+    }
+  }
+
   const markdown = `
 # 🎯 Current Focus
 
@@ -108,7 +145,8 @@ export default function ShowCurrentFocusCommand() {
 - **Source**: ${currentSession.source === "manual" ? "Manual" : "Calendar"}
 
 ---
-
+${deviationSection}
+${deviationSection ? "---\n" : ""}
 ${progress >= 100 ? "✅ **Session complete!** Don't forget to stop the session." : "Keep focusing! 💪"}
   `;
 

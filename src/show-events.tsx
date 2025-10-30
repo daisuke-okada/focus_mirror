@@ -1,4 +1,4 @@
-import { List, ActionPanel, Action, Icon, Color } from "@raycast/api";
+import { List, ActionPanel, Action, Icon, Color, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { eventRepository } from "./data/events";
 import { sessionRepository } from "./data/storage";
@@ -39,6 +39,25 @@ export default function ShowEventsCommand() {
   async function deleteEvent(id: string) {
     await eventRepository.delete(id);
     await loadData();
+  }
+
+  async function changeEventTag(event: EventSample, newTag: Tag) {
+    try {
+      event.tagFinal = newTag;
+      await eventRepository.update(event);
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Tag updated",
+        message: `Changed to: ${newTag}`,
+      });
+      await loadData();
+    } catch (error) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Failed to update tag",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
   }
 
   function formatTimestamp(timestamp: number): string {
@@ -175,6 +194,16 @@ export default function ShowEventsCommand() {
               icon={{ source: Icon.Eye, tintColor: event.tagFinal ? getTagColor(event.tagFinal) : Color.SecondaryText }}
               actions={
                 <ActionPanel>
+                  <ActionPanel.Submenu title="Change Tag" icon={Icon.Tag}>
+                    {DEFAULT_TAGS.map((tag) => (
+                      <Action
+                        key={tag}
+                        title={tag}
+                        icon={{ source: Icon.Circle, tintColor: getTagColor(tag) }}
+                        onAction={() => changeEventTag(event, tag)}
+                      />
+                    ))}
+                  </ActionPanel.Submenu>
                   <Action title="Delete Event" icon={Icon.Trash} style={Action.Style.Destructive} onAction={() => deleteEvent(event.id)} />
                   <Action title="Refresh" icon={Icon.ArrowClockwise} onAction={loadData} />
                 </ActionPanel>

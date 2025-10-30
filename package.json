@@ -53,6 +53,18 @@
       "description": "Automatically track your activity every minute in the background",
       "mode": "no-view",
       "interval": "1m"
+    },
+    {
+      "name": "classify-events",
+      "title": "Classify Events with AI",
+      "description": "Use AI to classify unclassified activity events",
+      "mode": "view"
+    },
+    {
+      "name": "check-deviation",
+      "title": "Check Deviation",
+      "description": "Check if current session is deviating from declared focus",
+      "mode": "view"
     }
   ],
   "dependencies": {

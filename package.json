@@ -16,6 +16,30 @@
       "title": "Start Focus",
       "description": "Start a new focus session with a tag and duration",
       "mode": "view"
+    },
+    {
+      "name": "stop-focus",
+      "title": "Stop Focus",
+      "description": "Stop the current focus session",
+      "mode": "no-view"
+    },
+    {
+      "name": "show-current",
+      "title": "Show Current Focus",
+      "description": "Display the current focus session with progress and time remaining",
+      "mode": "view"
+    },
+    {
+      "name": "show-sessions",
+      "title": "Show Sessions",
+      "description": "View all focus sessions history",
+      "mode": "view"
+    },
+    {
+      "name": "sample-activity",
+      "title": "Sample Activity",
+      "description": "Manually capture current app and browser activity",
+      "mode": "no-view"
     }
   ],
   "dependencies": {

@@ -14,13 +14,14 @@
     {
       "name": "start-focus",
       "title": "Start Focus",
-      "description": "",
-      "mode": "no-view"
+      "description": "Start a new focus session with a tag and duration",
+      "mode": "view"
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.103.5",
-    "@raycast/utils": "^1.17.0"
+    "@raycast/utils": "^1.17.0",
+    "nanoid": "^5.1.6"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^2.0.4",

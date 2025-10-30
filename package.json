@@ -46,6 +46,13 @@
       "title": "Show Events",
       "description": "View all captured activity events with tag classification",
       "mode": "view"
+    },
+    {
+      "name": "background-sampling",
+      "title": "Background Activity Sampling",
+      "description": "Automatically track your activity every minute in the background",
+      "mode": "no-view",
+      "interval": "1m"
     }
   ],
   "dependencies": {
